@@ -34,23 +34,28 @@ Lisp Lesser General Public License for more details.
   (let ((ls (uiop:read-file-lines file)))
     (count-if  (lambda (s) (ppcre:scan re s)) ls)))
 
-(sb-ext:gc)
+(defun test (regex files)
+  (sb-ext:gc)
 
-(format t "~%|======== ppcre-glep ========|~%")
-(time
- (format t "~a hits~%"
-	 (loop :for f :in (nthcdr 5 sb-ext:*posix-argv*)
-	       :sum (ppcre-glep (fifth sb-ext:*posix-argv*) f))))
+  (format t "~%|======== ppcre-glep ========|~%")
+  (time
+   (loop repeat 100
+         for hits = (loop :for f :in files
+	                  :sum (ppcre-glep regex f))
+         finally (format t "~a hits~%" hits)))
 
-(format t "~%|======== glep-interp ========|~%")
-(time
- (format t "~a hits~%"
-	 (loop :for f :in (nthcdr 5 sb-ext:*posix-argv*)
-	       :sum (glep (fifth sb-ext:*posix-argv*) f))))
+  (format t "~%|======== glep-interp ========|~%")
+  (time
+   (loop repeat 100
+         for hits = (loop :for f :in files
+	                  :sum (glep-interp regex f))
+         finally (format t "~a hits~%" hits)))
 
-(format t "~%|======== glep ========|~%")
-(time
- (format t "~a hits~%"
-	 (loop :for f :in (nthcdr 5 sb-ext:*posix-argv*)
-	       :sum (glep (fifth sb-ext:*posix-argv*) f))))
+  (format t "~%|======== glep ========|~%")
+  (time
+   (loop repeat 100
+         for hits = (loop :for f :in files
+	                  :sum (glep regex f))
+         finally (format t "~a hits~%" hits))))
 
+(test (fifth sb-ext:*posix-argv*) (nthcdr 5 sb-ext:*posix-argv*))
